@@ -89,12 +89,13 @@ void callback(const ImageConstPtr &ir, const ImageConstPtr &depth, const PointCl
     sprintf(file_rgb, "%s%04d_rgb.png", directory, cnt);
     sprintf(file_pcd, "%s%04d_pcd.pcd", directory, cnt);
     sprintf(file_depth, "%s%04d_depth.png", directory, cnt);
-    std::cout << file_ir << std::endl;
+    
     cv::imwrite(file_ir, mat_ir);
     cv::imwrite(file_ir_contrast, mat_ir_contrast);
     cv::imwrite(file_rgb, mat_rgb);
     cv::imwrite(file_depth, mat_depth);
-    pcl::io::savePCDFileASCII (file_pcd, *cloud_in);    
+    pcl::io::savePCDFileASCII (file_pcd, *cloud_in);   
+    std::cout << "Input data number "<<int(cnt)<< "is saved" << std::endl; 
     // cv::convertScaleAbs(mat_depth, mat_depth, 0.03, 1.0);
     // cv::Mat zerochannel = cv::Mat::zeros(cv::Size(mat_depth.rows, mat_depth.cols), CV_16U);
     cv::Mat output = cv::Mat::zeros(mat_depth.rows, mat_depth.cols, CV_8UC3);
@@ -121,6 +122,7 @@ void callback(const ImageConstPtr &ir, const ImageConstPtr &depth, const PointCl
     char file_depthir[100];
     sprintf(file_depthir, "%s%04d_depthir.png", directory, cnt);
     cv::imwrite(file_depthir, output);
+    std::cout << "Depth+ir is saved" << std::endl;
     cnt++;
 }
 

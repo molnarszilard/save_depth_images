@@ -67,45 +67,29 @@ void callback(const ImageConstPtr &ir, const ImageConstPtr &depth, const PointCl
     //ROS_INFO_STREAM("Data Arrival\n");
 
     cv_bridge::CvImagePtr img_ptr_ir;
-    cv_bridge::CvImagePtr img_ptr_ir_contrast;
     cv_bridge::CvImagePtr img_ptr_rgb;
     cv_bridge::CvImagePtr img_ptr_depth;
+    // std::string enci=ir->encoding;
+    // std::cout<<enci<<std::endl;
     img_ptr_ir = cv_bridge::toCvCopy(*ir, sensor_msgs::image_encodings::TYPE_16UC1);
-    img_ptr_ir_contrast = cv_bridge::toCvCopy(*ir, sensor_msgs::image_encodings::TYPE_16UC1);
     img_ptr_rgb = cv_bridge::toCvCopy(*rgb, sensor_msgs::image_encodings::TYPE_8UC3);
     img_ptr_depth = cv_bridge::toCvCopy(*depth, sensor_msgs::image_encodings::TYPE_16UC1);
     cv::Mat &mat_ir = img_ptr_ir->image;
-    cv::Mat &mat_ir_contrast = img_ptr_ir_contrast->image;
+    // cv::Mat mat_ir_contrast = cv::Mat::zeros(mat_ir.rows, mat_ir.cols, CV_16UC1);
     cv::Mat &mat_rgb = img_ptr_rgb->image;
     cv::Mat &mat_depth = img_ptr_depth->image;
-    cv::convertScaleAbs(mat_ir_contrast, mat_ir_contrast, 0.15, 0.0);
-    char file_ir[100];
-    char file_ir_contrast[100];
-    char file_rgb[100];
-    char file_pcd[100];
-    char file_depth[100];
-    sprintf(file_ir, "%s%04d_ir.png", directory, cnt);
-    sprintf(file_ir_contrast, "%s%04d_ir_contrast.png", directory, cnt);
-    sprintf(file_rgb, "%s%04d_rgb.png", directory, cnt);
-    sprintf(file_pcd, "%s%04d_pcd.pcd", directory, cnt);
-    sprintf(file_depth, "%s%04d_depth.png", directory, cnt);
-    
-    cv::imwrite(file_ir, mat_ir);
-    cv::imwrite(file_ir_contrast, mat_ir_contrast);
-    cv::imwrite(file_rgb, mat_rgb);
-    cv::imwrite(file_depth, mat_depth);
-    pcl::io::savePCDFileASCII (file_pcd, *cloud_in);   
-    std::cout << "Input data number "<<int(cnt)<< " is saved" << std::endl; 
+    // cv::convertScaleAbs(mat_ir, mat_ir_contrast, 0.15, 0.0);
+
     // cv::convertScaleAbs(mat_depth, mat_depth, 0.03, 1.0);
-    // cv::Mat zerochannel = cv::Mat::zeros(cv::Size(mat_depth.rows, mat_depth.cols), CV_16U);
+    cv::Mat zerochannel = cv::Mat::zeros(cv::Size(mat_depth.rows, mat_depth.cols), CV_16U);
     cv::Mat output = cv::Mat::zeros(mat_depth.rows, mat_depth.cols, CV_16UC3);
-    cv::Mat images[3] = {mat_ir, mat_depth, mat_ir_contrast};
+    cv::Mat images[3] = {mat_ir, mat_depth, zerochannel};
     int dims[3] = {2, mat_depth.rows, mat_depth.cols};
     cv::Mat joined(3, dims, CV_16U);
-    for (int i = 0; i < 3; ++i)
+    for (int i = 0; i < 3; i++)
     {
-        uint8_t *ptr = &joined.at<ushort>(i, 0, 0);                              // pointer to first element of slice i
-        cv::Mat destination(mat_depth.rows, mat_depth.cols, CV_16U, (void *)ptr); // no data copy, see documentation
+        uint16_t *ptr = &joined.at<uint16_t>(i, 0, 0);                            // pointer to first element of slice i
+        cv::Mat destination(mat_depth.rows, mat_depth.cols, CV_32S, (void *)ptr); // no data copy, see documentation
         images[i].copyTo(destination);
     }
 
@@ -113,16 +97,33 @@ void callback(const ImageConstPtr &ir, const ImageConstPtr &depth, const PointCl
     {
         for (int y = 0; y < images[0].cols; y++)
         {
-            output.at<cv::Vec3b>(x, y)[2] = images[0].at<uchar>(x, y);
-            output.at<cv::Vec3b>(x, y)[1] = images[1].at<uchar>(x, y);
-            output.at<cv::Vec3b>(x, y)[0] = images[2].at<uchar>(x, y);
+            output.at<cv::Vec3s>(x, y)[2] = images[0].at<unsigned short>(x, y);
+            output.at<cv::Vec3s>(x, y)[1] = images[1].at<unsigned short>(x, y);
+            // output.at<cv::Vec3s>(x, y)[0] = images[2].at<unsigned short>(x, y);
         }
     }
-    
+
+    char file_ir[100];
+    // char file_ir_contrast[100];
+    char file_rgb[100];
+    char file_pcd[100];
+    char file_depth[100];
+    sprintf(file_ir, "%s%04d_ir.png", directory, cnt);
+    // sprintf(file_ir_contrast, "%s%04d_ir_contrast.png", directory, cnt);
+    sprintf(file_rgb, "%s%04d_rgb.png", directory, cnt);
+    sprintf(file_pcd, "%s%04d_pcd.pcd", directory, cnt);
+    sprintf(file_depth, "%s%04d_depth.png", directory, cnt);
+
+    cv::imwrite(file_ir, mat_ir);
+    // cv::imwrite(file_ir_contrast, mat_ir_contrast);
+    cv::imwrite(file_rgb, mat_rgb);
+    cv::imwrite(file_depth, mat_depth);
+    pcl::io::savePCDFileASCII(file_pcd, *cloud_in);
+    std::cout << "Input data number " << int(cnt) << " is saved" << std::endl;
     char file_depthir[100];
     sprintf(file_depthir, "%s%04d_depthir.png", directory, cnt);
     cv::imwrite(file_depthir, output);
-    std::cout << "Depth+ir is saved" << std::endl;
+    // std::cout << "Depth+ir is saved" << std::endl;
     cnt++;
 }
 
@@ -130,10 +131,10 @@ int main(int argc, char **argv)
 {
     ros::init(argc, argv, "normalrgb");
     ros::NodeHandle nh_;
-    message_filters::Subscriber<Image> ir_sub(nh_, "ir_input", 10);
-    message_filters::Subscriber<Image> depth_sub(nh_, "depth_input", 10);
-    message_filters::Subscriber<PointCloud> pcd_sub(nh_, "point_cloud_in", 10);
-    message_filters::Subscriber<Image> rgb_sub(nh_, "rgb_input", 10);
+    message_filters::Subscriber<Image> ir_sub(nh_, "ir_input", 1000);
+    message_filters::Subscriber<Image> depth_sub(nh_, "depth_input", 1000);
+    message_filters::Subscriber<PointCloud> pcd_sub(nh_, "point_cloud_in", 1000);
+    message_filters::Subscriber<Image> rgb_sub(nh_, "rgb_input", 1000);
     Synchronizer<MySyncPolicy> sync(MySyncPolicy(10), ir_sub, depth_sub, pcd_sub, rgb_sub);
     //TimeSynchronizer<Image, Image, PointCloud, Image> sync(ir_sub, depth_sub, pcd_sub, rgb_sub, 10);
     sync.registerCallback(boost::bind(&callback, _1, _2, _3, _4));

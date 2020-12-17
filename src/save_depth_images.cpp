@@ -53,7 +53,7 @@
 using namespace sensor_msgs;
 using namespace message_filters;
 
-typedef pcl::PointXYZRGB Point;
+typedef pcl::PointXYZ Point;
 typedef pcl::PointCloud<Point> PointCloud;
 //typedef sensor_msgs::PointCloud2 PointCloud;
 typedef pcl::PointXYZ PointT;
@@ -95,17 +95,17 @@ void callback(const ImageConstPtr &ir, const ImageConstPtr &depth, const PointCl
     cv::imwrite(file_rgb, mat_rgb);
     cv::imwrite(file_depth, mat_depth);
     pcl::io::savePCDFileASCII (file_pcd, *cloud_in);   
-    std::cout << "Input data number "<<int(cnt)<< "is saved" << std::endl; 
+    std::cout << "Input data number "<<int(cnt)<< " is saved" << std::endl; 
     // cv::convertScaleAbs(mat_depth, mat_depth, 0.03, 1.0);
     // cv::Mat zerochannel = cv::Mat::zeros(cv::Size(mat_depth.rows, mat_depth.cols), CV_16U);
-    cv::Mat output = cv::Mat::zeros(mat_depth.rows, mat_depth.cols, CV_8UC3);
+    cv::Mat output = cv::Mat::zeros(mat_depth.rows, mat_depth.cols, CV_16UC3);
     cv::Mat images[3] = {mat_ir, mat_depth, mat_ir_contrast};
     int dims[3] = {2, mat_depth.rows, mat_depth.cols};
-    cv::Mat joined(3, dims, CV_8U);
+    cv::Mat joined(3, dims, CV_16U);
     for (int i = 0; i < 3; ++i)
     {
-        uint8_t *ptr = &joined.at<uint8_t>(i, 0, 0);                              // pointer to first element of slice i
-        cv::Mat destination(mat_depth.rows, mat_depth.cols, CV_8U, (void *)ptr); // no data copy, see documentation
+        uint8_t *ptr = &joined.at<uint16_t>(i, 0, 0);                              // pointer to first element of slice i
+        cv::Mat destination(mat_depth.rows, mat_depth.cols, CV_16U, (void *)ptr); // no data copy, see documentation
         images[i].copyTo(destination);
     }
 

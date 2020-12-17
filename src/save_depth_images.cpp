@@ -75,13 +75,13 @@ void callback(const ImageConstPtr &ir, const ImageConstPtr &depth, const PointCl
     cv::Mat &mat_ir = img_ptr_ir->image;
     cv::Mat &mat_rgb = img_ptr_rgb->image;
     cv::Mat &mat_depth = img_ptr_depth->image;
-    cv::convertScaleAbs(mat_ir, mat_ir, 0.15, 0.0);
-    cv::convertScaleAbs(mat_depth, mat_depth, 0.03, 1.0);
-    cv::Mat zerochannel = cv::Mat::zeros(cv::Size(mat_depth.rows, mat_depth.cols), CV_8U);
-    cv::Mat output = cv::Mat::zeros(mat_depth.rows, mat_depth.cols, CV_8UC3);
+    // cv::convertScaleAbs(mat_ir, mat_ir, 0.15, 0.0);
+    // cv::convertScaleAbs(mat_depth, mat_depth, 0.03, 1.0);
+    cv::Mat zerochannel = cv::Mat::zeros(cv::Size(mat_depth.rows, mat_depth.cols), CV_16U);
+    cv::Mat output = cv::Mat::zeros(mat_depth.rows, mat_depth.cols, CV_16UC3);
     cv::Mat images[3] = {mat_ir, mat_depth, zerochannel};
     int dims[3] = {2, mat_depth.rows, mat_depth.cols};
-    cv::Mat joined(3, dims, CV_8U);
+    cv::Mat joined(3, dims, CV_16U);
     for (int i = 0; i < 3; ++i)
     {
         uint8_t *ptr = &joined.at<uint8_t>(i, 0, 0);                              // pointer to first element of slice i
@@ -102,11 +102,11 @@ void callback(const ImageConstPtr &ir, const ImageConstPtr &depth, const PointCl
     char file_pcd[100];
     char file_depth[100];
     char file_depthir[100];
-    sprintf(file_ir, "%s%04d_ir.jpg", directory, cnt);
-    sprintf(file_rgb, "%s%04d_rgb.jpg", directory, cnt);
+    sprintf(file_ir, "%s%04d_ir.png", directory, cnt);
+    sprintf(file_rgb, "%s%04d_rgb.png", directory, cnt);
     sprintf(file_pcd, "%s%04d_pcd.pcd", directory, cnt);
-    sprintf(file_depth, "%s%04d_depth.jpg", directory, cnt);
-    sprintf(file_depthir, "%s%04d_depthir.jpg", directory, cnt);
+    sprintf(file_depth, "%s%04d_depth.png", directory, cnt);
+    sprintf(file_depthir, "%s%04d_depthir.png", directory, cnt);
     std::cout << file_ir << std::endl;
     cv::imwrite(file_ir, mat_ir);
     cv::imwrite(file_rgb, mat_rgb);

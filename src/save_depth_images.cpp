@@ -103,7 +103,7 @@ void callback(const ImageConstPtr &ir, const ImageConstPtr &depth, const PointCl
     cv::Mat joined(3, dims, CV_16U);
     for (int i = 0; i < 3; ++i)
     {
-        uint8_t *ptr = &joined.at<uint16_t>(i, 0, 0);                              // pointer to first element of slice i
+        uint8_t *ptr = &joined.at<uint8_t>(i, 0, 0);                              // pointer to first element of slice i
         cv::Mat destination(mat_depth.rows, mat_depth.cols, CV_16U, (void *)ptr); // no data copy, see documentation
         images[i].copyTo(destination);
     }

@@ -60,7 +60,7 @@ typedef pcl::PointXYZ PointT;
 typedef sync_policies::ApproximateTime<Image, Image, PointCloud, Image> MySyncPolicy;
 
 unsigned int cnt = 0;
-char directory[100] = "/home/szilard/projects/normalrgb/depthir/depthir2/";
+char directory[100] = "/home/szilard/file_repository/normalrgb_files/";
 
 void callback(const ImageConstPtr &ir, const ImageConstPtr &depth, const PointCloud::ConstPtr &cloud_in, const ImageConstPtr &rgb)
 {

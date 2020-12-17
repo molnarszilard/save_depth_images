@@ -67,6 +67,7 @@ void callback(const ImageConstPtr &ir, const ImageConstPtr &depth, const PointCl
     //ROS_INFO_STREAM("Data Arrival\n");
 
     cv_bridge::CvImagePtr img_ptr_ir;
+    cv_bridge::CvImagePtr img_ptr_ir_contrast;
     cv_bridge::CvImagePtr img_ptr_rgb;
     cv_bridge::CvImagePtr img_ptr_depth;
     img_ptr_ir = cv_bridge::toCvCopy(*ir, sensor_msgs::image_encodings::TYPE_16UC1);

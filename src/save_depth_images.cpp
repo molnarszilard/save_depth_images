@@ -97,14 +97,14 @@ void callback(const ImageConstPtr &ir, const ImageConstPtr &depth, const PointCl
     pcl::io::savePCDFileASCII (file_pcd, *cloud_in);    
     // cv::convertScaleAbs(mat_depth, mat_depth, 0.03, 1.0);
     // cv::Mat zerochannel = cv::Mat::zeros(cv::Size(mat_depth.rows, mat_depth.cols), CV_16U);
-    cv::Mat output = cv::Mat::zeros(mat_depth.rows, mat_depth.cols, CV_16UC3);
+    cv::Mat output = cv::Mat::zeros(mat_depth.rows, mat_depth.cols, CV_8UC3);
     cv::Mat images[3] = {mat_ir, mat_depth, mat_ir_contrast};
     int dims[3] = {2, mat_depth.rows, mat_depth.cols};
-    cv::Mat joined(3, dims, CV_16U);
+    cv::Mat joined(3, dims, CV_8U);
     for (int i = 0; i < 3; ++i)
     {
         uint8_t *ptr = &joined.at<uint8_t>(i, 0, 0);                              // pointer to first element of slice i
-        cv::Mat destination(mat_depth.rows, mat_depth.cols, CV_16U, (void *)ptr); // no data copy, see documentation
+        cv::Mat destination(mat_depth.rows, mat_depth.cols, CV_8U, (void *)ptr); // no data copy, see documentation
         images[i].copyTo(destination);
     }
 

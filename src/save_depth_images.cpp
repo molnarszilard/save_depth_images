@@ -100,7 +100,7 @@ void callback(const ImageConstPtr &ir, const ImageConstPtr &depth, const PointCl
     cv::Mat output = cv::Mat::zeros(mat_depth.rows, mat_depth.cols, CV_16UC3);
     cv::Mat images[3] = {mat_ir, mat_depth, mat_ir_contrast};
     int dims[3] = {2, mat_depth.rows, mat_depth.cols};
-    cv::Mat joined(3, dims, CV_8U);
+    cv::Mat joined(3, dims, CV_16U);
     for (int i = 0; i < 3; ++i)
     {
         uint8_t *ptr = &joined.at<uint16_t>(i, 0, 0);                              // pointer to first element of slice i

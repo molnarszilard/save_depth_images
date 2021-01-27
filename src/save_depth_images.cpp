@@ -83,9 +83,30 @@ void callback(const ImageConstPtr &ir, const ImageConstPtr &depth, const PointCl
     // cv::convertScaleAbs(mat_depth, mat_depth, 0.03, 1.0);
     cv::Mat zerochannel = cv::Mat::zeros(cv::Size(mat_depth.rows, mat_depth.cols), CV_16U);
     cv::Mat output = cv::Mat::zeros(mat_depth.rows, mat_depth.cols, CV_16UC3);
-    cv::Mat output2 = cv::Mat::zeros(mat_depth.rows, mat_depth.cols, CV_16UC3);
+    int combination = 3; //1-ir+depth+0, 2-depth+depth+depth, 3-ir+depth+depth
+        char file_output[100];
+    switch (combination)
+    {
+    case 1:
+    {
+        cv::Mat images[3] = {mat_ir, mat_depth, zerochannel};
+        sprintf(file_output, "%s%04d_depthir.png", directory, cnt);
+        break;
+    }
+    case 2:
+    {
+        cv::Mat images[3] = {mat_depth, mat_depth, mat_depth};
+        sprintf(file_output, "%s%04d_depth3.png", directory, cnt);
+        break;
+    }
+    case 3:
+    {
+        cv::Mat images[3] = {mat_ir, mat_depth, mat_depth};
+        sprintf(file_output, "%s%04d_depth2ir.png", directory, cnt);
+        break;
+    }
+    }
     cv::Mat images[3] = {mat_ir, mat_depth, zerochannel};
-    cv::Mat images2[3] = {mat_depth, mat_depth, mat_depth};
     int dims[3] = {2, mat_depth.rows, mat_depth.cols};
     int dims2[3] = {2, mat_depth.rows, mat_depth.cols};
     cv::Mat joined(3, dims, CV_16U);
@@ -95,10 +116,6 @@ void callback(const ImageConstPtr &ir, const ImageConstPtr &depth, const PointCl
         uint16_t *ptr = &joined.at<uint16_t>(i, 0, 0);                            // pointer to first element of slice i
         cv::Mat destination(mat_depth.rows, mat_depth.cols, CV_32S, (void *)ptr); // no data copy, see documentation
         images[i].copyTo(destination);
-
-        uint16_t *ptr2 = &joined2.at<uint16_t>(i, 0, 0);                            // pointer to first element of slice i
-        cv::Mat destination2(mat_depth.rows, mat_depth.cols, CV_32S, (void *)ptr2); // no data copy, see documentation
-        images2[i].copyTo(destination2);
     }
 
     for (int x = 0; x < images[0].rows; x++)
@@ -107,11 +124,7 @@ void callback(const ImageConstPtr &ir, const ImageConstPtr &depth, const PointCl
         {
             output.at<cv::Vec3s>(x, y)[2] = images[0].at<unsigned short>(x, y);
             output.at<cv::Vec3s>(x, y)[1] = images[1].at<unsigned short>(x, y);
-            // output.at<cv::Vec3s>(x, y)[0] = images[2].at<unsigned short>(x, y);
-
-            output2.at<cv::Vec3s>(x, y)[2] = images2[0].at<unsigned short>(x, y);
-            output2.at<cv::Vec3s>(x, y)[1] = images2[1].at<unsigned short>(x, y);
-            output2.at<cv::Vec3s>(x, y)[0] = images2[2].at<unsigned short>(x, y);
+            output.at<cv::Vec3s>(x, y)[0] = images[2].at<unsigned short>(x, y);
         }
     }
 
@@ -132,12 +145,8 @@ void callback(const ImageConstPtr &ir, const ImageConstPtr &depth, const PointCl
     cv::imwrite(file_depth, mat_depth);
     pcl::io::savePCDFile(file_pcd, *cloud_in, true);
     std::cout << "Input data number " << int(cnt) << " is saved" << std::endl;
-    char file_depthir[100];
-    sprintf(file_depthir, "%s%04d_depthir.png", directory, cnt);
-    cv::imwrite(file_depthir, output);
-    char file_depth3[100];
-    sprintf(file_depth3, "%s%04d_depth3.png", directory, cnt);
-    cv::imwrite(file_depth3, output2);
+
+    cv::imwrite(file_output, output);
     // std::cout << "Depth+ir is saved" << std::endl;
     cnt++;
 }

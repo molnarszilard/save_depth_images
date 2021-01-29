@@ -84,7 +84,7 @@ void callback(const ImageConstPtr &ir, const ImageConstPtr &depth, const PointCl
     cv::Mat zerochannel = cv::Mat::zeros(cv::Size(mat_depth.rows, mat_depth.cols), CV_16U);
     cv::Mat output = cv::Mat::zeros(mat_depth.rows, mat_depth.cols, CV_16UC3);
     int combination = 3; //1-ir+depth+0, 2-depth+depth+depth, 3-ir+depth+depth
-        char file_output[100];
+    char file_output[100];
     switch (combination)
     {
     case 1:
